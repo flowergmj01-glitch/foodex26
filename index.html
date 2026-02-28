@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>樂米穀場 2026 東京食品展日語手冊</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for in-browser JSX compilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        /* 拼音樣式調整 */
+        ruby {
+            ruby-align: center;
+        }
+        rt {
+            font-size: 0.5em;
+            color: #a16207;
+            font-weight: 700;
+            letter-spacing: 0;
+            transform: translateY(-0.1em);
+        }
+        /* 淡入動畫 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        /* 隱藏滾動條但保留滾動功能 (給導覽列用) */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans antialiased text-gray-900">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // 內聯 SVG 圖示 (取代原有的 lucide-react)
+        const Icons = {
+            Megaphone: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 mb-1"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>,
+            Cookie: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 mb-1"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>,
+            MessageSquare: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 mb-1"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+            MapPin: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 mb-1"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>,
+            PackageSearch: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 mb-1"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/><path d="m7.5 4.27 9 5.15"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/><circle cx="18.5" cy="15.5" r="2.5"/><path d="M20.27 17.27 22 19"/></svg>,
+            Users: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 mb-1"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+            Handshake: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 mb-1"><path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-7.3 7.3a1 1 0 0 0 0 1.42l.33.33a1 1 0 0 0 1.42 0l2.27-2.27"/><path d="m8 12 2.88-2.88a3 3 0 0 1 4.24 0l3.88 3.88"/></svg>
+        };
+
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('announcements');
+
+            // 1. 攤位案內句子 (由短到長)
+            const announcements = [
+                {
+                    zh: "請試吃。",
+                    jp: <>ご<ruby>試食<rt>ししょく</rt></ruby>どうぞ。</>
+                },
+                {
+                    zh: "我們是來自台灣的米商。",
+                    jp: <><ruby>私<rt>わたし</rt></ruby>たちは<ruby>台湾<rt>たいわん</rt></ruby>から<ruby>来<rt>き</rt></ruby>たお<ruby>米<rt>こめ</rt></ruby>の<ruby>卸業者<rt>おろしぎょうしゃ</rt></ruby>です。</>
+                },
+                {
+                    zh: "試吃完的牙籤請丟這邊。",
+                    jp: <><ruby>使<rt>つか</rt></ruby>い<ruby>終<rt>お</rt></ruby>わった<ruby>爪楊枝<rt>つまようじ</rt></ruby>はこちらへお<ruby>捨<rt>す</rt></ruby>てください。</>
+                },
+                {
+                    zh: "歡迎拿取我們的宣傳袋子，裡面有DM。",
+                    jp: <>パンフレットが<ruby>入<rt>はい</rt></ruby>った<ruby>袋<rt>ふくろ</rt></ruby>をどうぞお<ruby>持<rt>も</rt></ruby>ち<ruby>帰<rt>かえ</rt></ruby>りください。</>
+                },
+                {
+                    zh: "歡迎試吃用100%台灣米做的鳳梨酥、米餅、鮮酥燒。",
+                    jp: <><ruby>１００％<rt>ひゃくパーセント</rt></ruby><ruby>台湾米<rt>たいわんまい</rt></ruby>で<ruby>作<rt>つく</rt></ruby>ったパイナップルケーキ、こめパフ、おかきをご<ruby>試食<rt>ししょく</rt></ruby>ください。</>
+                }
+            ];
+
+            // 2. 口味介紹
+            const flavors = [
+                {
+                    category: "こめパフ（米餅）",
+                    items: [
+                        { zh: "這是巧克力口味。", jp: <>こちらはチョコレート<ruby>味<rt>あじ</rt></ruby>です。</> },
+                        { zh: "這是牛奶口味。", jp: <>こちらはミルク<ruby>味<rt>あじ</rt></ruby>です。</> },
+                        { zh: "這是花生口味。", jp: <>こちらはピーナッツ<ruby>味<rt>あじ</rt></ruby>です。</> },
+                        { zh: "這是芝麻口味。", jp: <>こちらはごま<ruby>味<rt>あじ</rt></ruby>です。</> },
+                        { zh: "這是鹹蛋黃口味。", jp: <>こちらはたまご<ruby>味<rt>あじ</rt></ruby>です。</> },
+                        { zh: "這是起司口味。", jp: <>こちらはチーズ<ruby>味<rt>あじ</rt></ruby>です。</> }
+                    ]
+                },
+                {
+                    category: "おかき（鮮酥燒）",
+                    items: [
+                        { zh: "這是海鮮口味。", jp: <>こちらは<ruby>海鮮<rt>かいせん</rt></ruby><ruby>味<rt>あじ</rt></ruby>です。</> },
+                        { zh: "這是海苔口味。", jp: <>こちらはのり<ruby>味<rt>あじ</rt></ruby>です。</> },
+                        { zh: "這是焦糖口味。", jp: <>こちらはキャラメル<ruby>味<rt>あじ</rt></ruby>です。</> },
+                        { zh: "這是草莓煉乳口味。", jp: <>こちらはイチゴ<ruby>練乳味<rt>れんにゅうあじ</rt></ruby>です。</> }
+                    ]
+                }
+            ];
+
+            // 展場實用日語 5 頁
+            const practicalPages = {
+                page1: [
+                    { zh: "請試吃。", jp: <>ご<ruby>試食<rt>ししょく</rt></ruby>どうぞ。</> },
+                    { zh: "歡迎看看。", jp: <>ぜひご<ruby>覧<rt>らん</rt></ruby>ください。</> },
+                    { zh: "感謝您來到我們攤位，請看看台灣的米。", jp: <><ruby>当<rt>とう</rt></ruby>ブースへお<ruby>越<rt>こ</rt></ruby>しいただきありがとうございます。<ruby>台湾<rt>たいわん</rt></ruby>のお<ruby>米<rt>こめ</rt></ruby>をご<ruby>覧<rt>らん</rt></ruby>ください。</> }
+                ],
+                page2: [
+                    { zh: "我們是來自台灣東部的品牌「樂米穀場」。", jp: <><ruby>私<rt>わたし</rt></ruby>たちは<ruby>台湾東部<rt>たいわんとうぶ</rt></ruby>のブランド「<ruby>樂米穀場<rt>らくまいこくじょう</rt></ruby>」です。</> },
+                    { zh: "台灣東部有美麗的縱谷地形與好山好水。", jp: <><ruby>台湾東部<rt>たいわんとうぶ</rt></ruby>は<ruby>美<rt>うつく</rt></ruby>しい<ruby>縦谷地形<rt>じゅうこくちけい</rt></ruby>と<ruby>豊<rt>ゆた</rt></ruby>かな<ruby>自然<rt>しぜん</rt></ruby>があります。</> },
+                    { zh: "這裡的稻米種植環境跟日本非常相似。", jp: <><ruby>稲<rt>いね</rt></ruby>の<ruby>栽培環境<rt>さいばいかんきょう</rt></ruby>は<ruby>日本<rt>にほん</rt></ruby>と<ruby>非常<rt>ひじょう</rt></ruby>に<ruby>似<rt>に</rt></ruby>ています。</> }
+                ],
+                page3: [
+                    { zh: "這些是配合工廠使用我們的米製作的加工食品。", jp: <>こちらは<ruby>提携<rt>ていけい</rt></ruby><ruby>工場<rt>こうじょう</rt></ruby>が<ruby>当社<rt>とうしゃ</rt></ruby>の<ruby>米<rt>こめ</rt></ruby>で<ruby>作<rt>つく</rt></ruby>った<ruby>加工食品<rt>かこうしょくひん</rt></ruby>です。</> },
+                    { zh: "除了加工品，我們也有販售米穀粉。", jp: <><ruby>加工品<rt>かこうひん</rt></ruby>のほかに、<ruby>米粉<rt>こめこ</rt></ruby>も<ruby>販売<rt>はんばい</rt></ruby>しております。</> },
+                    { zh: "我們的米品質非常好，受到很多好評。", jp: <><ruby>私<rt>わたし</rt></ruby>たちのお<ruby>米<rt>こめ</rt></ruby>は<ruby>品質<rt>ひんしつ</rt></ruby>が<ruby>高<rt>たか</rt></ruby>く、とても<ruby>好評<rt>こうひょう</rt></ruby>です。</> },
+                    { zh: "產品說明加上保存期為一年。", jp: <><ruby>賞味期限<rt>しょうみきげん</rt></ruby>は１<ruby>年<rt>ねん</rt></ruby>です。</> }
+                ],
+                page4: [
+                    { zh: "請問您可以給我一張名片嗎？", jp: <>お<ruby>名刺<rt>めいし</rt></ruby>をいただけますか？</> },
+                    { zh: "請稍等一下，我請負責人過來。", jp: <><ruby>少々<rt>しょうしょう</rt></ruby>お<ruby>待<rt>ま</rt></ruby>ちください。<ruby>担当者<rt>たんとうしゃ</rt></ruby>を<ruby>呼<rt>よ</rt></ruby>んでまいります。</> },
+                    { zh: "需要幫您拿一份詳細的目錄嗎？", jp: <><ruby>詳<rt>くわ</rt></ruby>しいカタログはいかがですか？</> },
+                    { zh: "請幫我們填寫問卷。", jp: <>アンケートにご<ruby>協力<rt>きょうりょく</rt></ruby>お<ruby>願<rt>ねが</rt></ruby>いします。</> }
+                ],
+                page5: [
+                    { zh: "關於批發與報價，我們會於會後Email給您。", jp: <><ruby>卸売<rt>おろしうり</rt></ruby>や<ruby>見積<rt>みつ</rt></ruby>もりについては、<ruby>展示会後<rt>てんじかいご</rt></ruby>にメールでお<ruby>送<rt>おく</rt></ruby>りいたします。</> },
+                    { zh: "如果有任何問題，請隨時與我們聯繫，謝謝！", jp: <>ご<ruby>質問<rt>しつもん</rt></ruby>があれば、いつでもご<ruby>連絡<rt>れんらく</rt></ruby>ください。ありがとうございます！</> }
+                ]
+            };
+
+            const tabs = [
+                { id: 'announcements', label: '攤位案內', icon: <Icons.Megaphone /> },
+                { id: 'flavors', label: '口味介紹', icon: <Icons.Cookie /> },
+                { id: 'page1', label: '基本打招呼', icon: <Icons.MessageSquare /> },
+                { id: 'page2', label: '產地介紹', icon: <Icons.MapPin /> },
+                { id: 'page3', label: '產品說明', icon: <Icons.PackageSearch /> },
+                { id: 'page4', label: '展場應對', icon: <Icons.Users /> },
+                { id: 'page5', label: '商務結語', icon: <Icons.Handshake /> }
+            ];
+
+            // 渲染單個句子的卡片
+            const PhraseCard = ({ zh, jp }) => (
+                <div className="bg-white rounded-xl shadow-md p-5 mb-5 border-l-8 border-yellow-400">
+                    <div className="mb-3">
+                        <p className="text-3xl font-bold text-gray-800 leading-[2] tracking-wide">{jp}</p>
+                    </div>
+                    <div className="bg-yellow-50 p-3 rounded-lg mt-4">
+                        <p className="text-xl font-bold text-yellow-800">{zh}</p>
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="min-h-screen bg-gray-50 pb-24">
+                    {/* 標題列 */}
+                    <header className="bg-yellow-400 text-gray-900 shadow-md sticky top-0 z-10">
+                        <div className="px-6 py-5 flex items-center justify-between max-w-4xl mx-auto">
+                            <div>
+                                <h1 className="text-3xl font-extrabold tracking-wider">樂米穀場</h1>
+                                <p className="text-sm font-bold mt-1 opacity-80">FOODEX JAPAN 2026 日語手冊</p>
+                            </div>
+                            <div className="bg-white text-yellow-600 font-bold px-3 py-1 rounded-full text-sm shadow-sm">
+                                台灣館
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* 主要內容區 */}
+                    <main className="p-4 max-w-4xl mx-auto">
+                        
+                        {/* 攤位案內 */}
+                        {activeTab === 'announcements' && (
+                            <div className="animate-fade-in">
+                                <h2 className="text-2xl font-black text-gray-800 mb-6 flex items-center border-b-4 border-yellow-400 pb-2 inline-block">
+                                    <div className="text-yellow-500 mr-2"><Icons.Megaphone /></div> 攤位案內（由短到長）
+                                </h2>
+                                {announcements.map((item, index) => (
+                                    <PhraseCard key={index} zh={item.zh} jp={item.jp} />
+                                ))}
+                            </div>
+                        )}
+
+                        {/* 口味介紹 */}
+                        {activeTab === 'flavors' && (
+                            <div className="animate-fade-in">
+                                <h2 className="text-2xl font-black text-gray-800 mb-6 flex items-center border-b-4 border-yellow-400 pb-2 inline-block">
+                                    <div className="text-yellow-500 mr-2"><Icons.Cookie /></div> 產品口味介紹
+                                </h2>
+                                {flavors.map((cat, idx) => (
+                                    <div key={idx} className="mb-8 bg-yellow-100 p-4 rounded-2xl">
+                                        <h3 className="text-2xl font-bold text-yellow-900 mb-4 bg-yellow-300 inline-block px-4 py-1 rounded-full">{cat.category}</h3>
+                                        {cat.items.map((item, index) => (
+                                            <PhraseCard key={index} zh={item.zh} jp={item.jp} />
+                                        ))}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* 實用日語 1-5 頁 */}
+                        {['page1', 'page2', 'page3', 'page4', 'page5'].includes(activeTab) && (
+                            <div className="animate-fade-in">
+                                <h2 className="text-2xl font-black text-gray-800 mb-6 flex items-center border-b-4 border-yellow-400 pb-2 inline-block">
+                                    <div className="text-yellow-500 mr-2">{tabs.find(t => t.id === activeTab)?.icon}</div>
+                                    <span className="ml-2">{tabs.find(t => t.id === activeTab)?.label}</span>
+                                </h2>
+                                {practicalPages[activeTab].map((item, index) => (
+                                    <PhraseCard key={index} zh={item.zh} jp={item.jp} />
+                                ))}
+                            </div>
+                        )}
+
+                    </main>
+
+                    {/* 底部導覽列 (適合手機單手操作) */}
+                    <nav className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20 overflow-x-auto hide-scrollbar">
+                        <div className="flex w-max min-w-full">
+                            {tabs.map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`flex-1 min-w-[100px] flex flex-col items-center justify-center py-3 px-2 transition-colors duration-200 
+                                        ${activeTab === tab.id ? 'text-yellow-600 border-t-4 border-yellow-400 bg-yellow-50' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                    {tab.icon}
+                                    <span className="text-sm font-bold mt-1">{tab.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </nav>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
